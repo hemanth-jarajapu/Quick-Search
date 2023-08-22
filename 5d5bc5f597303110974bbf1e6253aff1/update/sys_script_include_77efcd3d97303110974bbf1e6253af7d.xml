@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_350851_quick_s_0.QuickSearchUtils</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>QuickSearchUtils</name>
+        <script><![CDATA[var QuickSearchUtils = Class.create();
+QuickSearchUtils.prototype = {
+    initialize: function() {},
+
+    getSearchResults: function(siteid, customer_siteid, company, locationName) {
+        siteid = siteid || this.getParameter("sysparm_siteid");
+        customer_siteid = customer_siteid || this.getParameter("sysparm_customer_siteid");
+        company = company || this.getParameter("sysparm_company");
+        locationName = locationName || this.getParameter("sysparm_loc_name");
+
+        if (!company) {
+            return JSON.stringify({
+                "locationsFound": false
+            });
+        }
+
+        var locationsFound = false;
+        var results = [];
+
+        var locationGR = new GlideRecord("cmn_location");
+        locationGR.orderBy("name");
+        locationGR.addQuery("u_loc_idISNOTEMPTY");
+        locationGR.addQuery("company", company).addOrCondition("account", company);
+        if (siteid) {
+            locationGR.addQuery("u_loc_id", "CONTAINS", siteid);
+        }
+        if (customer_siteid) {
+            locationGR.addQuery("u_gps_customer_site_id", "CONTAINS", customer_siteid);
+        }
+        if (locationName) {
+            locationGR.addQuery("name", "CONTAINS", locationName);
+        }
+        locationGR.query();
+        gs.info(locationGR.getEncodedQuery());
+        if (locationGR.hasNext()) {
+            locationsFound = true;
+        }
+
+        var location;
+        while (locationGR.next()) {
+            location = {};
+            location.id = locationGR.getUniqueValue();
+            location.name = locationGR.getDisplayValue();
+            location.siteid = locationGR.getValue("u_loc_id");
+            location.cust_siteid = locationGR.getValue("u_gps_customer_site_id");
+            results.push(location);
+        }
+
+        return JSON.stringify({
+            "locationsFound": locationsFound,
+            "results": results
+        });
+    },
+
+    type: 'QuickSearchUtils'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2023-08-22 07:23:45</sys_created_on>
+        <sys_id>77efcd3d97303110974bbf1e6253af7d</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>QuickSearchUtils</sys_name>
+        <sys_package display_value="Quick Search" source="x_350851_quick_s_0">5d5bc5f597303110974bbf1e6253aff1</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Quick Search">5d5bc5f597303110974bbf1e6253aff1</sys_scope>
+        <sys_update_name>sys_script_include_77efcd3d97303110974bbf1e6253af7d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2023-08-22 07:24:26</sys_updated_on>
+    </sys_script_include>
+</record_update>
