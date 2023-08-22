@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_page">
+    <sys_ui_page action="INSERT_OR_UPDATE">
+        <category>general</category>
+        <client_script><![CDATA[var siteIdElem = gel("siteid");
+var customerSiteIdElem = gel("customer_siteid");
+var siteNameElem = gel("location_name");
+
+siteIdElem.addEventListener("keypress", function(ev){
+	if(ev.key === "Enter") {
+		searchRequiredData();
+	}
+});
+
+customerSiteIdElem.addEventListener("keypress", function(ev){
+	if(ev.key === "Enter") {
+		searchRequiredData();
+	}
+});
+
+siteNameElem.addEventListener("keypress", function(ev){
+	if(ev.key === "Enter") {
+		searchRequiredData();
+	}
+});
+
+function searchRequiredData() {
+    gel("search_results").innerHTML = "";
+    var siteId = siteIdElem.value;
+    var customerSiteId = customerSiteIdElem.value;
+	var siteName = siteNameElem.value;
+
+    if (!siteId && !customerSiteId && !siteName) {
+        alert("Please Fill any of the search inputs.");
+        return false;
+    }
+
+    gel("results_loading").style.display = "block";
+    var sdmUtils = new GlideAjax("x_350851_quick_s_0.QuickSearchUtils");
+    sdmUtils.addParam("sysparm_name", "getSearchResults");
+    sdmUtils.addParam("sysparm_siteid", siteId);
+    sdmUtils.addParam("sysparm_customer_siteid", customerSiteId);
+    sdmUtils.addParam("sysparm_company", gel("company").value);
+	sdmUtils.addParam("sysparm_loc_name", gel("location_name").value);
+    sdmUtils.getXMLAnswer(function(output) {
+        gel("results_loading").style.display = "none";
+		
+        if (output) {
+            output = JSON.parse(output);
+            if (output.locationsFound) {
+                var locations = output.results;
+                var locationHTML = '<table id="result_data" class="list_table table table-hover table-striped"><tr class="location_details"><th>Name</th><th>Site ID</th><th>Customer Site ID</th></tr>';
+                var clickFunction = "";
+                for (var l = 0; l < locations.length; l++) {
+                    clickFunction = "clickFunction('" + locations[l].id + "', '" + locations[l].name + "')";
+                    locationHTML += '<tr class="location_details"><td><a role="button" id="' + locations[l].name + '" class="glide_ref_item_link" onclick="' + clickFunction + '" tabindex="0">' + locations[l].name + '</a></td><td>' + locations[l].siteid + '</td><td>' + locations[l].cust_siteid + '</td></tr>';
+                }
+                locationHTML += "</table>";
+                gel("search_results").innerHTML = locationHTML;
+            } else {
+                gel("search_results").innerHTML = "No locations found!";
+            }
+        } else {
+            gel("search_results").innerHTML = "Couldn't find locations!";
+        }
+        gel("clear_results").style.display = "block";
+    });
+}
+
+function clearResults() {
+    gel("search_results").innerHTML = "";
+    gel("clear_results").style.display = "none";
+	siteIdElem.value = "";
+	customerSiteIdElem.value = "";
+	siteNameElem.value = "";
+}
+
+function clickFunction(locationId, locationName) {
+    g_form.setValue("location", locationId, locationName);
+    GlideDialogWindow.get().destroy();
+}]]></client_script>
+        <description/>
+        <direct>false</direct>
+        <endpoint>x_350851_quick_s_0_quick_search_ui.do</endpoint>
+        <html><![CDATA[<?xml version="1.0" encoding="utf-8" ?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
+	
+   <g:ui_form>
+      <div id="search_ui">
+		  
+         <div class="modal-body" id="modal_body">
+            <div id="search_inputs">
+				<input type="hidden" name="company" id="company" value="${sysparm_company}"/>
+				<span id="filter_icon" class="icon icon-filter"></span>
+				
+				<div class="clubbed_inputs sn-tooltip-basic" title="Input and click Enter" data-toggle="tooltip" data-placement="auto">
+				   <input type="text" name="siteid" id="siteid" value="" placeholder="Site ID" class="form-control"/>
+				   <input type="text" name="customer_siteid" id="customer_siteid" value="" placeholder="Customer Site ID" class="form-control"/>
+			    </div>
+				
+				<div class="clubbed_inputs">
+				<input type="text" name="location_name" id="location_name" value="" placeholder="Name" class="form-control"/>
+				</div>
+            </div>
+         </div>
+		  
+         <div class="modal-buttons">
+            <input type="button" id="clear_results" value="Clear" onclick="clearResults()" class="btn btn-default"/>
+            <input type="button" id="search_data" value="Search" onclick="searchRequiredData()" class="btn btn-primary"/>
+         </div>
+		  
+		  <span id="results_loading" class="icon icon-loading"></span>
+          <div id="search_results"></div>
+		  
+      </div>
+   </g:ui_form>
+   <style>
+	  #search_ui input {
+      margin: 5px;
+      }
+	   
+	  #modal_body {
+	  background-color: #e4e6ea;
+	  border-radius: 5px;
+	  margin-bottom: 10px;
+	  }
+	   
+	  #filter_icon {
+	  color: gray;
+	  }
+	   
+      #search_data {
+      disabled: true;
+      }
+	   
+      #clear_results {
+      display: none;
+      }
+	   
+	  #results_loading {
+	  position: absolute;
+	  left: 50%;
+	  display: none;
+	  }
+	   
+      #search_results {
+      margin-top: 10px;
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+      -webkit-flex-direction: row;
+      -ms-flex-direction: row;
+      flex-direction: row;
+      -webkit-flex-wrap: nowrap;
+      -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+      -webkit-justify-content: center;
+      -ms-flex-pack: center;
+      justify-content: center;
+      -webkit-align-content: center;
+      -ms-flex-line-pack: center;
+      align-content: center;
+      -webkit-align-items: center;
+      -ms-flex-align: center;
+      align-items: center;
+      }
+	   
+      #result_data {
+      -webkit-order: 0;
+      -ms-flex-order: 0;
+      order: 0;
+      -webkit-flex: 0 1 auto;
+      -ms-flex: 0 1 auto;
+      flex: 0 1 auto;
+      -webkit-align-self: auto;
+      -ms-flex-item-align: auto;
+      align-self: auto;
+      }
+	   
+      #search_ui .modal-buttons {
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+      -webkit-flex-direction: row;
+      -ms-flex-direction: row;
+      flex-direction: row;
+      -webkit-flex-wrap: nowrap;
+      -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+      -webkit-justify-content: flex-end;
+      -ms-flex-pack: end;
+      justify-content: flex-end;
+      -webkit-align-content: stretch;
+      -ms-flex-line-pack: stretch;
+      align-content: stretch;
+      -webkit-align-items: center;
+      -ms-flex-align: center;
+      align-items: center;
+      }
+	   
+      #search_ui .modal-buttons input {
+      -webkit-order: 0;
+      -ms-flex-order: 0;
+      order: 0;
+      -webkit-flex: 0 1 auto;
+      -ms-flex: 0 1 auto;
+      flex: 0 1 auto;
+      -webkit-align-self: auto;
+      -ms-flex-item-align: auto;
+      align-self: auto;
+      }
+	   
+	  .clubbed_inputs {
+	  display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+      -webkit-flex-direction: row;
+      -ms-flex-direction: row;
+      flex-direction: row;
+      -webkit-flex-wrap: nowrap;
+      -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+      -webkit-justify-content: flex-end;
+      -ms-flex-pack: end;
+      justify-content: flex-end;
+      -webkit-align-content: stretch;
+      -ms-flex-line-pack: stretch;
+      align-content: stretch;
+      -webkit-align-items: center;
+      -ms-flex-align: center;
+      align-items: center;
+	  }
+	   
+	   .clubbed_inputs input {
+      -webkit-order: 0;
+      -ms-flex-order: 0;
+      order: 0;
+      -webkit-flex: 0 1 auto;
+      -ms-flex: 0 1 auto;
+      flex: 0 1 auto;
+      -webkit-align-self: auto;
+      -ms-flex-item-align: auto;
+      align-self: auto;
+      }
+   </style>
+</j:jelly>
+]]></html>
+        <name>quick_search_ui</name>
+        <processing_script/>
+        <sys_class_name>sys_ui_page</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2023-08-22 07:21:20</sys_created_on>
+        <sys_id>a61c093997303110974bbf1e6253afcd</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>quick_search_ui</sys_name>
+        <sys_package display_value="Quick Search" source="x_350851_quick_s_0">5d5bc5f597303110974bbf1e6253aff1</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Quick Search">5d5bc5f597303110974bbf1e6253aff1</sys_scope>
+        <sys_update_name>sys_ui_page_a61c093997303110974bbf1e6253afcd</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2023-08-22 08:07:29</sys_updated_on>
+    </sys_ui_page>
+</record_update>

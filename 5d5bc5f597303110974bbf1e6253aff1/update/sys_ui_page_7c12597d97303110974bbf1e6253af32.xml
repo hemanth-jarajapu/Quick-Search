@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_page">
+    <sys_ui_page action="INSERT_OR_UPDATE">
+        <category>general</category>
+        <client_script><![CDATA[var siteIdElem = gel("siteid");
+var customerSiteIdElem = gel("customer_siteid");
+var ciNameElem = gel("ci_name");
+var companyIdElem = gel("companyid");
+var gemsOrgElem = gel("gemsorg");
+
+// Prefill previous inputs
+try {
+    siteIdElem.value = sessionStorage.ci_data_ui_siteid || "";
+    customerSiteIdElem.value = sessionStorage.ci_data_ui_cusiteid || "";
+    ciNameElem.value = sessionStorage.ci_data_ui_ciname || "";
+    companyIdElem.value = sessionStorage.ci_data_ui_companyid || "";
+    gemsOrgElem.value = sessionStorage.ci_data_ui_gemsorg || "";
+} catch (err) {}
+
+siteIdElem.addEventListener("keypress", function(ev) {
+    if (ev.key === "Enter") {
+        applyFilters();
+    }
+});
+
+customerSiteIdElem.addEventListener("keypress", function(ev) {
+    if (ev.key === "Enter") {
+        applyFilters();
+    }
+});
+
+ciNameElem.addEventListener("keypress", function(ev) {
+    if (ev.key === "Enter") {
+        applyFilters();
+    }
+});
+
+companyIdElem.addEventListener("keypress", function(ev) {
+    if (ev.key === "Enter") {
+        applyFilters();
+    }
+});
+
+gemsOrgElem.addEventListener("keypress", function(ev) {
+    if (ev.key === "Enter") {
+        applyFilters();
+    }
+});
+
+function clearFilters() {
+    siteIdElem.value = "";
+    customerSiteIdElem.value = "";
+    ciNameElem.value = "";
+    companyIdElem.value = "";
+    gemsOrgElem.value = "";
+}
+
+function applyFilters() {
+    var siteId = siteIdElem.value;
+    var customerSiteId = customerSiteIdElem.value;
+    var ciName = ciNameElem.value;
+    var companyId = companyIdElem.value;
+    var gemsOrg = gemsOrgElem.value;
+
+    // Store inputs in session storage
+    try {
+        sessionStorage.ci_data_ui_siteid = siteId;
+        sessionStorage.ci_data_ui_cusiteid = customerSiteId;
+        sessionStorage.ci_data_ui_ciname = ciName;
+        sessionStorage.ci_data_ui_companyid = companyId;
+        sessionStorage.ci_data_ui_gemsorg = gemsOrg;
+    } catch (err) {}
+
+    if (!siteId && !customerSiteId && !ciName && !companyId && !gemsOrg) {
+        alert("Please Fill any of the filter inputs.");
+        return false;
+    }
+
+    var encodedQuery = "cmdb_ciISNOTEMPTY";
+    if (siteId) {
+        encodedQuery += "^cmdb_ci.location.u_loc_idLIKE" + siteId;
+    }
+    if (customerSiteId) {
+        encodedQuery += "^cmdb_ci.location.u_gps_customer_site_idLIKE" + customerSiteId;
+    }
+    if (companyId) {
+        encodedQuery += "^cmdb_ci.company.ref_customer_account.u_gps_company_idLIKE" + companyId;
+    }
+    if (gemsOrg) {
+        encodedQuery += "^gems_orgLIKE" + gemsOrg;
+    }
+    if (ciName) {
+        encodedQuery += "^cmdb_ci.nameLIKE" + ciName;
+    }
+
+    g_list.setFilterAndRefresh(encodedQuery);
+    GlideDialogWindow.get().destroy();
+}]]></client_script>
+        <description/>
+        <direct>false</direct>
+        <endpoint>x_350851_quick_s_0_quick_filter_ui.do</endpoint>
+        <html><![CDATA[<?xml version="1.0" encoding="utf-8" ?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
+	
+   <g:ui_form>
+      <div id="filter_ui">
+		  
+         <div class="modal-body" id="modal_body">
+            <div id="filter_inputs">
+				<span id="filter_icon" class="icon icon-filter"></span>
+				
+				<div class="clubbed_inputs sn-tooltip-basic" title="Input and click Enter" data-toggle="tooltip" data-placement="auto">
+				   <input type="text" name="siteid" id="siteid" value="" placeholder="Site ID" class="form-control"/>
+				   <input type="text" name="customer_siteid" id="customer_siteid" value="" placeholder="Customer Site ID" class="form-control"/>
+			    </div>
+				
+				<div class="clubbed_inputs">
+				   <input type="text" name="companyid" id="companyid" value="" placeholder="Company ID" class="form-control"/>
+				   <input type="text" name="gemsorg" id="gemsorg" value="" placeholder="GEMS Org" class="form-control"/>
+			    </div>
+				
+				<div class="clubbed_inputs">
+				   <input type="text" name="ci_name" id="ci_name" value="" placeholder="CI Name" class="form-control"/>
+			    </div>
+				
+            </div>
+         </div>
+		  
+         <div class="modal-buttons">
+            <input type="button" id="clear_filters" value="Clear" onclick="clearFilters()" class="btn btn-default"/>
+            <input type="button" id="apply_filters" value="Filter" onclick="applyFilters()" class="btn btn-primary"/>
+         </div>
+		  
+      </div>
+   </g:ui_form>
+   <style>
+	  #filter_ui input {
+      margin: 5px;
+      }
+	   
+	  #modal_body {
+	  background-color: #e4e6ea;
+	  border-radius: 5px;
+	  margin-bottom: 10px;
+	  }
+	   
+	  #filter_icon {
+	  color: gray;
+	  }
+	   
+      #filter_ui .modal-buttons {
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+      -webkit-flex-direction: row;
+      -ms-flex-direction: row;
+      flex-direction: row;
+      -webkit-flex-wrap: nowrap;
+      -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+      -webkit-justify-content: flex-end;
+      -ms-flex-pack: end;
+      justify-content: flex-end;
+      -webkit-align-content: stretch;
+      -ms-flex-line-pack: stretch;
+      align-content: stretch;
+      -webkit-align-items: center;
+      -ms-flex-align: center;
+      align-items: center;
+      }
+	   
+      #filter_ui .modal-buttons input {
+      -webkit-order: 0;
+      -ms-flex-order: 0;
+      order: 0;
+      -webkit-flex: 0 1 auto;
+      -ms-flex: 0 1 auto;
+      flex: 0 1 auto;
+      -webkit-align-self: auto;
+      -ms-flex-item-align: auto;
+      align-self: auto;
+      }
+	   
+	  .clubbed_inputs {
+	  display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+      -webkit-flex-direction: row;
+      -ms-flex-direction: row;
+      flex-direction: row;
+      -webkit-flex-wrap: nowrap;
+      -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+      -webkit-justify-content: flex-end;
+      -ms-flex-pack: end;
+      justify-content: flex-end;
+      -webkit-align-content: stretch;
+      -ms-flex-line-pack: stretch;
+      align-content: stretch;
+      -webkit-align-items: center;
+      -ms-flex-align: center;
+      align-items: center;
+	  }
+	   
+	   .clubbed_inputs input {
+      -webkit-order: 0;
+      -ms-flex-order: 0;
+      order: 0;
+      -webkit-flex: 0 1 auto;
+      -ms-flex: 0 1 auto;
+      flex: 0 1 auto;
+      -webkit-align-self: auto;
+      -ms-flex-item-align: auto;
+      align-self: auto;
+      }
+   </style>
+</j:jelly>
+]]></html>
+        <name>quick_filter_ui</name>
+        <processing_script/>
+        <sys_class_name>sys_ui_page</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2023-08-22 07:55:43</sys_created_on>
+        <sys_id>7c12597d97303110974bbf1e6253af32</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>quick_filter_ui</sys_name>
+        <sys_package display_value="Quick Search" source="x_350851_quick_s_0">5d5bc5f597303110974bbf1e6253aff1</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Quick Search">5d5bc5f597303110974bbf1e6253aff1</sys_scope>
+        <sys_update_name>sys_ui_page_7c12597d97303110974bbf1e6253af32</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2023-08-22 08:02:14</sys_updated_on>
+    </sys_ui_page>
+</record_update>
